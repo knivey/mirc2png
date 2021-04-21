@@ -40,7 +40,7 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     $width = 0;
     $height = count($text);
     foreach($text as $line) {
-        $width = max($width, strlen(stripcodes($line)));
+        $width = max($width, mb_strlen(stripcodes($line)));
     }
     //So much for easy monospace, i think this may be the biggest char, this function will reduce size if a char is smaller than its box
     $lol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -88,10 +88,10 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
             }
             $x = $curX * $charW;
             $y = $lineno * $charH;
-            imagefilledrectangle($im, $x, $y, $x + ($charW * strlen($chunk)), $y + $charH, $bg);
+            imagefilledrectangle($im, $x, $y, $x + ($charW * mb_strlen($chunk)), $y + $charH, $bg);
             // $y + $charH because lol fonts start at bottom coord..
             $box = imagettftext($im, $size, 0, $x, $y + $charH, $fg, $font, $chunk);
-            $curX += strlen($chunk);
+            $curX += mb_strlen($chunk);
         }
         $lineno--;
     }
