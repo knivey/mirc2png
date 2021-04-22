@@ -17,7 +17,7 @@ function loadfile($file) {
     return array_filter(explode("\n", $cont));
 }
 
-function stripcodes(string $text): string {
+function stripcodes(string $text, $color = true): string {
     $text = str_replace("\x02", "", $text);
     $text = str_replace("\x1D", "", $text);
     $text = str_replace("\x1F", "", $text);
@@ -25,6 +25,8 @@ function stripcodes(string $text): string {
     $text = str_replace("\x11", "", $text);
     $text = str_replace("\x16", "", $text);
     $text = str_replace("\x0F", "", $text);
+    if(!$color)
+        return $text;
     $colorRegex = "/\x03(\d?\d?)(,\d\d?)?/";
     return preg_replace($colorRegex, '', $text);
 }
@@ -67,6 +69,7 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
         $bg = $colors[1];
         $curX = 0;
         $colorRegex = "/^\x03(\d?\d?)(,\d\d?)?/";
+        $line = stripcodes($line, false);
         for($i=0; $i < strlen($line); $i++) {
             $rem = substr($line, $i);
             if(preg_match($colorRegex, $rem, $m)) {
