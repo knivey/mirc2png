@@ -138,7 +138,7 @@ function dirtree($dir, $ext = "txt") {
 //convert($argv[1], pathinfo($argv[1], PATHINFO_FILENAME) . '.png');
 $files = dirtree($argv[1]);
 if($files === false) {
-    die("Bad directory: $argv[1]\nFirst argument directory of mirc art txt files, Second arguments where to save pngs or all files found.\n");
+    die("Bad directory: $argv[1]\nFirst argument directory of mirc art txt files, Second arguments where to save pngs of all files found.\n");
 }
 
 if(!is_dir($argv[2])) {
@@ -149,14 +149,24 @@ if(count($files) == 0) {
     die("No txt files found\n");
 }
 
+$bdir = $argv[1];
+if($bdir[strlen($bdir)-1] != '/') {
+    $bdir = "$bdir/";
+}
+
 echo "Conversion starting...\r";
 $total = count($files);
 $num = 0;
-foreach(dirtree($argv[1]) as $file) {
+foreach(dirtree($bdir) as $file) {
     $num++;
     echo "[$num/$total] Converting " . pathinfo($file, PATHINFO_FILENAME) . "                      \r";
     $out = $argv[2] ?? 'out';
-    convert($file, $out . '/' . pathinfo($file, PATHINFO_FILENAME) . '.png');
+    $outRelative = substr($file, strlen($bdir));
+    $outDir = $out . '/' . pathinfo($outRelative, PATHINFO_DIRNAME);
+    if(!file_exists($outDir))
+        mkdir($outDir, 0777, true);
+    $outFile = pathinfo($outRelative, PATHINFO_FILENAME) . '.png';
+    convert($file, $outDir . '/' . $outFile);
 }
 echo "\nDone!\n";
 
