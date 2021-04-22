@@ -54,7 +54,6 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     $minY = min(array($rect[1],$rect[3],$rect[5],$rect[7]));
     $maxY = max(array($rect[1],$rect[3],$rect[5],$rect[7]));
     $charH = $maxY - $minY;
-    var_dump([$charH, $charW]);
     $height *= $charH;
     $width *= ($charW);
 
@@ -103,11 +102,63 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
 
 }
 
-convert($argv[1], pathinfo($argv[1], PATHINFO_FILENAME) . '.png');
 
+function dirtree($dir, $ext = "txt") {
+    if(!is_dir($dir)) {
+        return false;
+    }
+    if($dir[strlen($dir)-1] != '/') {
+        $dir = "$dir/";
+    }
+    $tree = [];
+    if ($dh = opendir($dir)) {
+        while (($file = readdir($dh)) !== false) {
+            $name = $dir . $file;
+            $type = filetype($name);
+            if($file == '.' || $file == '..') {
+                continue;
+            }
+            if($type == 'dir' && $file[0] != '.') {
+                foreach(dirtree($name . '/') as $ent) {
+                    $tree[] = $ent;
+                }
+            }
+            if($type == 'file' && $file[0] != '.' && strtolower($ext) == strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
+                $tree[] = $name;
+            }
+        }
+        closedir($dh);
+    } else {
+        echo "Couldn't opendir $dir\n";
+        return false;
+    }
+    return $tree;
+}
 
+//convert($argv[1], pathinfo($argv[1], PATHINFO_FILENAME) . '.png');
+$files = dirtree($argv[1]);
+if($files === false) {
+    die("Bad directory: $argv[1]\nFirst argument directory of mirc art txt files, Second arguments where to save pngs or all files found.\n");
+}
 
+if(!is_dir($argv[2])) {
+    die("$argv[2] is not directory\n");
+}
+//var_dump($files);
+if(count($files) == 0) {
+    die("No txt files found\n");
+}
 
+echo "Conversion starting...\r";
+$total = count($files);
+$num = 0;
+foreach(dirtree($argv[1]) as $file) {
+    $num++;
+    echo "[$num/$total] Converting " . pathinfo($file, PATHINFO_FILENAME) . "                      \r";
+    $out = $argv[2] ?? 'out';
+    convert($file, $out . '/' . pathinfo($file, PATHINFO_FILENAME) . '.png');
+}
+echo "\nDone!\n";
 
 
 
