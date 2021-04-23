@@ -51,7 +51,6 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     $minX = min(array($rect[0],$rect[2],$rect[4],$rect[6]));
     $maxX = max(array($rect[0],$rect[2],$rect[4],$rect[6]));
     $charW = ($maxX - $minX) / strlen($lol);
-    $rect = imagettfbbox($size, 0, $font, $lol);
     $minY = min(array($rect[1],$rect[3],$rect[5],$rect[7]));
     $maxY = max(array($rect[1],$rect[3],$rect[5],$rect[7]));
     $charH = $maxY - $minY;
