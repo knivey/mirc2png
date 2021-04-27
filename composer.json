@@ -1,0 +1,17 @@
+{
+  "name": "knivey/mirc2png",
+  "description": "Converts mirc art to png files",
+  "minimum-stability": "stable",
+  "license": "mit",
+  "authors": [
+    {
+      "name": "knivey",
+      "email": "knivey@botops.net"
+    }
+  ],
+  "require": {
+    "knivey/irctools": "dev-master",
+    "knivey/tools": "dev-master",
+    "ext-gd": "*"
+  }
+}

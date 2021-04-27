@@ -2,40 +2,15 @@
 /*
  * Great resource https://modern.ircdocs.horse/formatting.html
  */
-function loadfile($file) {
-    $cont = file_get_contents($file);
-    //php apparently sucked at its detection so just checking this manually
-    if($cont[0] == "\xFF" && $cont[1] == "\xFE") {
-        //UTF-16LE is best bet then fallback to the auto
-        if(mb_check_encoding($cont, "UTF-16LE")) {
-            $cont = mb_convert_encoding($cont, "UTF-8", "UTF-16LE");
-        } else {
-            $cont = mb_convert_encoding($cont, "UTF-8");
-        }
-    }
-    $cont = str_replace("\r", "\n", $cont);
-    return array_filter(explode("\n", $cont));
-}
 
-function stripcodes(string $text, $color = true, $reset = true): string {
-    $text = str_replace("\x02", "", $text);
-    $text = str_replace("\x1D", "", $text);
-    $text = str_replace("\x1F", "", $text);
-    $text = str_replace("\x1E", "", $text);
-    $text = str_replace("\x11", "", $text);
-    $text = str_replace("\x16", "", $text);
-    if($reset)
-        $text = str_replace("\x0F", "", $text);
-    if(!$color)
-        return $text;
-    $colorRegex = "/\x03(\d?\d?)(,\d\d?)?/";
-    return preg_replace($colorRegex, '', $text);
-}
+
+use knivey\tools;
+use knivey\irctools;
 
 require_once 'colors.php';
 
 function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-Regular.ttf") {
-    $text = loadfile($mircfile);
+    $text = irctools\loadartfile($mircfile);
     if(empty($text)) {
         echo "$mircfile is empty?\n";
         return;
@@ -43,7 +18,7 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     $width = 0;
     $height = count($text);
     foreach($text as $line) {
-        $width = max($width, mb_strlen(stripcodes($line)));
+        $width = max($width, mb_strlen(irctools\stripcodes($line)));
     }
     //So much for easy monospace, this string should give us an idea to calc text block size, the imagettfbox function only gives bare min to draw
     $lol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -80,7 +55,7 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
         $bg = $colors[1];
         $curX = 0;
         $colorRegex = "/^\x03(\d?\d?)(,\d\d?)?/";
-        $line = stripcodes($line, false, false);
+        $line = irctools\stripcodes($line, false, false);
         for($i=0; $i < strlen($line); $i++) {
             $rem = substr($line, $i);
 
@@ -125,40 +100,8 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
 }
 
 
-function dirtree($dir, $ext = "txt") {
-    if(!is_dir($dir)) {
-        return false;
-    }
-    if($dir[strlen($dir)-1] != '/') {
-        $dir = "$dir/";
-    }
-    $tree = [];
-    if ($dh = opendir($dir)) {
-        while (($file = readdir($dh)) !== false) {
-            $name = $dir . $file;
-            $type = filetype($name);
-            if($file == '.' || $file == '..') {
-                continue;
-            }
-            if($type == 'dir' && $file[0] != '.') {
-                foreach(dirtree($name . '/') as $ent) {
-                    $tree[] = $ent;
-                }
-            }
-            if($type == 'file' && $file[0] != '.' && strtolower($ext) == strtolower(pathinfo($name, PATHINFO_EXTENSION))) {
-                $tree[] = $name;
-            }
-        }
-        closedir($dh);
-    } else {
-        echo "Couldn't opendir $dir\n";
-        return false;
-    }
-    return $tree;
-}
-
 //convert($argv[1], pathinfo($argv[1], PATHINFO_FILENAME) . '.png');
-$files = dirtree($argv[1]);
+$files = tools\dirtree($argv[1]);
 if($files === false) {
     die("Bad directory: $argv[1]\nFirst argument directory of mirc art txt files, Second arguments where to save pngs of all files found.\n");
 }
@@ -179,7 +122,7 @@ if($bdir[strlen($bdir)-1] != '/') {
 echo "Conversion starting...\r";
 $total = count($files);
 $num = 0;
-foreach(dirtree($bdir) as $file) {
+foreach(tools\dirtree($bdir) as $file) {
     $num++;
     echo "[$num/$total] Converting " . pathinfo($file, PATHINFO_FILENAME) . "                      \r";
     $out = $argv[2] ?? 'out';
