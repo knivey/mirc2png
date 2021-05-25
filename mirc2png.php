@@ -3,6 +3,7 @@
  * Great resource https://modern.ircdocs.horse/formatting.html
  */
 
+require_once "vendor/autoload.php";
 
 use knivey\tools;
 use knivey\irctools;
