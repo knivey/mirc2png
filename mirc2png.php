@@ -141,7 +141,7 @@ $total = count($files);
 $num = 0;
 foreach(tools\dirtree($bdir) as $file) {
     $num++;
-    echo "[$num/$total] Converting " . pathinfo($file, PATHINFO_FILENAME) . "                      \r";
+    echo "[$num/$total] Converting " . substr($file, strlen($bdir)) . "\n";
     $out = $argv[2] ?? 'out';
     $outRelative = substr($file, strlen($bdir));
     $outDir = $out . '/' . pathinfo($outRelative, PATHINFO_DIRNAME);
