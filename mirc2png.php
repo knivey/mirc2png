@@ -10,17 +10,13 @@ use knivey\irctools;
 
 require_once 'colors.php';
 
-function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-Regular.ttf") {
-    $text = irctools\loadartfile($mircfile);
-    if(empty($text)) {
-        echo "$mircfile is empty?\n";
-        return;
+function getSizes($font, $size) {
+    static $cache = [];
+
+    if(isset($cache["$font $size"])) {
+        return $cache["$font $size"];
     }
-    $width = 0;
-    $height = count($text);
-    foreach($text as $line) {
-        $width = max($width, mb_strlen(irctools\stripcodes($line)));
-    }
+
     //So much for easy monospace, this string should give us an idea to calc text block size, the imagettfbox function only gives bare min to draw
     $lol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     $rect = imagettfbbox($size, 0, $font, $lol);
@@ -42,6 +38,27 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     $maxY = max(array($rect[1],$rect[3],$rect[5],$rect[7]));
     $charH = ($maxY - $minY) + $riseup;
 
+
+    return $cache["$font $size"] = [$charH, $charW, $riseup];
+}
+
+function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-Regular.ttf") {
+    $text = irctools\loadartfile($mircfile);
+    if(empty($text)) {
+        echo "$mircfile is empty?\n";
+        return;
+    }
+    $width = 0;
+    $height = count($text);
+    if($height > 9000) {
+        echo "$mircfile very very big skipping it\n";
+        return;
+    }
+    foreach($text as $line) {
+        $width = max($width, mb_strlen(irctools\stripcodes($line)));
+    }
+
+    list($charH, $charW, $riseup) = getSizes($font, $size);
     $height *= $charH;
     $width *= $charW;
 
@@ -97,7 +114,6 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     }
     imagepng($im, $pngfile);
     imagedestroy($im);
-
 }
 
 
