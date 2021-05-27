@@ -57,7 +57,11 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
     foreach($text as $line) {
         $width = max($width, mb_strlen(irctools\stripcodes($line)));
     }
-
+    if($width > 512) {
+        echo "$mircfile has lines longer than 512 skipping it.\n";
+        return;
+    }
+    
     list($charH, $charW, $riseup) = getSizes($font, $size);
     $height *= $charH;
     $width *= $charW;
