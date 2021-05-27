@@ -61,7 +61,7 @@ function convert(string $mircfile, string $pngfile, $size = 12, $font = "./Hack-
         echo "$mircfile has lines longer than 512 skipping it.\n";
         return;
     }
-    
+
     list($charH, $charW, $riseup) = getSizes($font, $size);
     $height *= $charH;
     $width *= $charW;
